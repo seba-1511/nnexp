@@ -9,3 +9,4 @@ A template for neural network experiments
 * Provide Mnist example.
 * train function should only do 1 epoch.
 * Sensible command-line arguments support.
+* Easy network definition.
