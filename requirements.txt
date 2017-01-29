@@ -1,0 +1,8 @@
+numpy
+seaborn
+moviepy
+tqdm
+PIL
+randopt
+https://s3.amazonaws.com/pytorch/whl/cu75/torch-0.1.7.post2-cp27-none-linux_x86_64.whl://s3.amazonaws.com/pytorch/whl/cu75/torch-0.1.7.post2-cp27-none-linux_x86_64.whl 
+torchvision

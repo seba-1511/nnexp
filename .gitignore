@@ -90,3 +90,7 @@ ENV/
 
 # Custom
 data/*.*
+data/**
+randopt_results/**
+.tags
+results/**
