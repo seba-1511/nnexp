@@ -8,7 +8,7 @@ install:
 	python setup.py develop
 
 mnist:
-	python examples/mnist_simple.py
+	python examples/mnist_simple.py 
 
 custom:
 	python examples/mnist_custom.py

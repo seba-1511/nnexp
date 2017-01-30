@@ -23,9 +23,9 @@ from default import get_model, get_optimizer, get_loss
 parser = argparse.ArgumentParser(
     description='nnexp argument parser')
 parser.add_argument(
-    '--no-cuda', action='store_true', default=False, help='Train on GPU')
+    '--cuda', action='store_true', default=False, help='Train on GPU')
 args = parser.parse_args()
-args.cuda = not args.no_cuda
+# args.cuda = not args.no_cuda
 
 
 class Network(Module):
@@ -37,6 +37,7 @@ class Network(Module):
             setattr(self, 'l' + str(i), l)
 
     def forward(self, x):
+        x = x.view(-1, 784)
         for layer in self.layers:
             x = layer(x)
         return x
@@ -44,34 +45,28 @@ class Network(Module):
 
 
 def train(data, model, loss, optimizer):
-    # for X, y in tqdm(data, leave=False):
-        # pass
-    # return 0.0
     model.train()
     total_error = 0.0
 
-    for X, y in tqdm(data):
+    for X, y in tqdm(data, leave=False):
         if args.cuda:
             X, y = X.cuda(), y.cuda()
-        X, y = Variable(X), Variable(y)
+        X, y = Variable(X).float(), Variable(y).float()
         optimizer.zero_grad()
-        error = loss(model(X), y)
+        error = loss(model.forward(X), y)
         error.backward()
         optimizer.step()
         total_error += error
     return total_error.cpu().data.numpy()[0] / len(data)
 
 
-def test(dataset, model, loss):
-    # for X, y in tqdm(data, leave=False):
-        # pass
-    # return 0.0
+def test(data, model, loss):
     model.eval()
     error = 0.0
-    for X, y in tqdm(data):
+    for X, y in tqdm(data, leave=False):
         if args.cuda:
             X, y = X.cuda(), y.cuda()
-        X, y = Variable(X), Variable(y)
+        X, y = Variable(X).float(), Variable(y).float()
         error += loss(model(X), y)
     return error.cpu().data.numpy()[0] / len(data)
 
@@ -80,7 +75,7 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
           rng_seed=1234, num_epochs=10, split=(0.7, 0.2, 0.1), bsz=64):
 
     if model is None:
-        model = get_model(784)
+        model = get_model(784, 1)
     model = Network(model)
 
     if loss is None:
@@ -107,9 +102,16 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
     np.random.seed(rng_seed)
     if args.cuda:
         th.cuda.manual_seed(rng_seed)
+        model.cuda()
 
     print('Splitting dataset in ' + str(split[0]) + ' train, ' + str(split[1]) + ' Validation, ' + str(split[2]) + ' Test')
     dataset = split_dataset(dataset, split[0], split[1], split[2])
+    kwargs = {'num_workers': 1, 'pin_memory': True}
+    train_loader = th.utils.data.DataLoader(dataset, batch_size=bsz, shuffle=True, **kwargs)
+    dataset.use_valid()
+    valid_loader = th.utils.data.DataLoader(dataset, batch_size=bsz, shuffle=True, **kwargs)
+    dataset.use_test()
+    test_loader = th.utils.data.DataLoader(dataset, batch_size=bsz, shuffle=True, **kwargs)
 
     train_errors = []
     valid_errors = []
@@ -118,15 +120,15 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
     for epoch in range(num_epochs):
         print('\n\n', '-' * 20, ' Epoch ', epoch, ' ', '_' * 20)
         dataset.use_train()
-        train_errors.append(train(dataset, model, loss, optimizer))
+        train_errors.append(train(train_loader, model, loss, optimizer))
         print('Training error: ', train_errors[-1])
         dataset.use_valid()
-        valid_errors.append(test(dataset, model, loss))
+        valid_errors.append(test(valid_loader, model, loss))
         print('Validation error: ', valid_errors[-1])
 
     # Benchmark on Test
     dataset.use_test()
-    test_error = test(dataset, model, loss)
+    test_error = test(test_loader, model, loss)
     print('Final Test Error: ', test_error)
 
     # Save experiment result
