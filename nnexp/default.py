@@ -14,6 +14,4 @@ def get_optimizer(model, lr=0.01):
     return th.optim.SGD(model.parameters(), lr=lr, momentum=0.95)
 
 def get_loss(regression=True):
-    if regression:
-        return th.nn.MSELoss()
-    return th.nn.NLLLoss()
+    return th.nn.SmoothL1Loss()

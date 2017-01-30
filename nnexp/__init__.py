@@ -1,3 +1,3 @@
 #!/usr/bin/env python
 
-from main import train, test, learn
+from main import train, test, learn, Network

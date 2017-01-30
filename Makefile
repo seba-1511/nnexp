@@ -1,7 +1,7 @@
 
 .PHONY: all
 
-all: mnist
+all: custom
 
 install:
 	pip install -r requirements.txt
@@ -11,4 +11,4 @@ mnist:
 	python examples/mnist_simple.py 
 
 custom:
-	python examples/mnist_custom.py
+	python examples/csv_example.py

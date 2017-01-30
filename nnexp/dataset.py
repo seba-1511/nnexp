@@ -1,5 +1,6 @@
  #!/usr/bin/env python
 
+import numpy as np
 import torch as th
 from torchvision import datasets, transforms
 from random import choice
@@ -55,14 +56,23 @@ class DataSplitter(object):
 
 
 class CSVDataset(object):
-    def __init__(self, path, train_cols, test_cols):
-        pass
+    def __init__(self, path, in_cols, out_cols, headers=False):
+        data = np.genfromtxt(path, delimiter=',')
+        if headers:
+            data = data[1:, :]
+        self.data = data
+        self.X = data[:, :in_cols]
+        self.y = data[:, in_cols:in_cols+out_cols]
+        
 
     def __len__(self):
-        pass
+        return self.data.shape[0]
 
     def __getitem__(self, index):
-        pass
+        X, y = th.from_numpy(self.X[index]), th.from_numpy(self.y[index])
+        X = X.float()
+        y = y.float()
+        return X, y
 
 
 def split_dataset(dataset, train=0.7, valid=0.2, test=0.1):

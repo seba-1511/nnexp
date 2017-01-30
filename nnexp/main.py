@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     '--cuda', action='store_true', default=False, help='Train on GPU')
 args = parser.parse_args()
-# args.cuda = not args.no_cuda
+args.cuda = False
 
 
 class Network(Module):
@@ -37,7 +37,8 @@ class Network(Module):
             setattr(self, 'l' + str(i), l)
 
     def forward(self, x):
-        x = x.view(-1, 784)
+        if len(x.size()) > 2:
+            x = x.view(-1, 784)
         for layer in self.layers:
             x = layer(x)
         return x
@@ -80,8 +81,8 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
             out_size = 1
         else:
             out_size = dataset[0][1].numel()
-        model = get_model(784, 1)
-    model = Network(model)
+        model = get_model(in_size, out_size)
+        model = Network(model)
 
     if loss is None:
         if isinstance(dataset[0][1], (int, long, float, complex)):
