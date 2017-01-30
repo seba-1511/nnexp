@@ -13,5 +13,7 @@ def get_model(in_size, out_size, sizes=[64, 64]):
 def get_optimizer(model, lr=0.01):
     return th.optim.SGD(model.parameters(), lr=lr, momentum=0.95)
 
-def get_loss():
-    return th.nn.MSELoss()
+def get_loss(regression=True):
+    if regression:
+        return th.nn.MSELoss()
+    return th.nn.NLLLoss()

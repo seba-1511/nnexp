@@ -75,11 +75,20 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
           rng_seed=1234, num_epochs=10, split=(0.7, 0.2, 0.1), bsz=64):
 
     if model is None:
+        in_size = dataset[0][0].numel()
+        if isinstance(dataset[0][1], (int, long, float, complex)):
+            out_size = 1
+        else:
+            out_size = dataset[0][1].numel()
         model = get_model(784, 1)
     model = Network(model)
 
     if loss is None:
-        loss = get_loss()
+        if isinstance(dataset[0][1], (int, long, float, complex)):
+            reg = True
+        else:
+            reg = False
+        loss = get_loss(regression=reg)
 
     if optimizer is None:
         optimizer = get_optimizer(model)
