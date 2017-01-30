@@ -44,9 +44,9 @@ class Network(Module):
 
 
 def train(data, model, loss, optimizer):
-    for X, y in tqdm(data, leave=False):
-        pass
-    return 0.0
+    # for X, y in tqdm(data, leave=False):
+        # pass
+    # return 0.0
     model.train()
     total_error = 0.0
 
@@ -63,9 +63,9 @@ def train(data, model, loss, optimizer):
 
 
 def test(dataset, model, loss):
-    for X, y in tqdm(data, leave=False):
-        pass
-    return 0.0
+    # for X, y in tqdm(data, leave=False):
+        # pass
+    # return 0.0
     model.eval()
     error = 0.0
     for X, y in tqdm(data):
@@ -109,20 +109,12 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
         th.cuda.manual_seed(rng_seed)
 
     print('Splitting dataset in ' + str(split[0]) + ' train, ' + str(split[1]) + ' Validation, ' + str(split[2]) + ' Test')
-    # train_set, valid_set, test_set = split_dataset(dataset, split[0], split[1], split[2])
-    # kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-    # train_set = th.utils.data.DataLoader(train_set, batch_size=bsz, shuffle=True, 
-                                         # **kwargs)
-    # valid_set = th.utils.data.DataLoader(valid_set, batch_size=bsz, shuffle=True, 
-                                         # **kwargs)
-    # test_set = th.utils.data.DataLoader(test_set, batch_size=bsz, shuffle=True, 
-                                         # **kwargs)
     dataset = split_dataset(dataset, split[0], split[1], split[2])
-    import pdb; pdb.set_trace()
 
     train_errors = []
     valid_errors = []
 
+    # Start training
     for epoch in range(num_epochs):
         print('\n\n', '-' * 20, ' Epoch ', epoch, ' ', '_' * 20)
         dataset.use_train()
@@ -132,10 +124,12 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
         valid_errors.append(test(dataset, model, loss))
         print('Validation error: ', valid_errors[-1])
 
+    # Benchmark on Test
     dataset.use_test()
     test_error = test(dataset, model, loss)
     print('Final Test Error: ', test_error)
 
+    # Save experiment result
     exp.add_result(test_error, {
         'train_errors': train_errors,
         'valid_errors': valid_errors,
@@ -154,6 +148,7 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
     b = Plot('Final Error')
     b.bar(x=[train_errors[-1], valid_errors[-1], test_error],
           labels=['Train', 'Validation', 'Test'])
+    
     cont = Container(1, 2, title=exp_name)
     cont.set_plot(0, 0, p)
     cont.set_plot(0, 1, b)
