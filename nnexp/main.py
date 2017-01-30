@@ -63,6 +63,8 @@ def train(data, model, loss, optimizer):
 
 
 def test(dataset, model, loss):
+    for X, y in tqdm(data, leave=False):
+        pass
     return 0.0
     model.eval()
     error = 0.0
@@ -75,7 +77,7 @@ def test(dataset, model, loss):
 
 
 def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
-          rng_seed=1234, num_epochs=10):
+          rng_seed=1234, num_epochs=10, split=(0.7, 0.2, 0.1), bsz=64):
 
     if model is None:
         model = get_model(784)
@@ -97,6 +99,8 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
         'loss': str(loss),
         'rng_seed': rng_seed,
         'num_epochs': num_epochs,
+        'bsz': bsz,
+        'split': split,
     })
 
     th.manual_seed(rng_seed)
@@ -104,27 +108,32 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
     if args.cuda:
         th.cuda.manual_seed(rng_seed)
 
-    print('Splitting dataset in 70% train, 20% Validation, 10% Test')
-    train_set, valid_set, test_set = split_dataset(dataset)
-    kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-    train_set = th.utils.data.DataLoader(train_set, batch_size=64, shuffle=True, 
-                                         **kwargs)
-    valid_set = th.utils.data.DataLoader(valid_set, batch_size=64, shuffle=True, 
-                                         **kwargs)
-    test_set = th.utils.data.DataLoader(test_set, batch_size=64, shuffle=True, 
-                                         **kwargs)
+    print('Splitting dataset in ' + str(split[0]) + ' train, ' + str(split[1]) + ' Validation, ' + str(split[2]) + ' Test')
+    # train_set, valid_set, test_set = split_dataset(dataset, split[0], split[1], split[2])
+    # kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
+    # train_set = th.utils.data.DataLoader(train_set, batch_size=bsz, shuffle=True, 
+                                         # **kwargs)
+    # valid_set = th.utils.data.DataLoader(valid_set, batch_size=bsz, shuffle=True, 
+                                         # **kwargs)
+    # test_set = th.utils.data.DataLoader(test_set, batch_size=bsz, shuffle=True, 
+                                         # **kwargs)
+    dataset = split_dataset(dataset, split[0], split[1], split[2])
+    import pdb; pdb.set_trace()
 
     train_errors = []
     valid_errors = []
 
     for epoch in range(num_epochs):
         print('\n\n', '-' * 20, ' Epoch ', epoch, ' ', '_' * 20)
-        train_errors.append(train(train_set, model, loss, optimizer))
+        dataset.use_train()
+        train_errors.append(train(dataset, model, loss, optimizer))
         print('Training error: ', train_errors[-1])
-        valid_errors.append(test(valid_set, model, loss))
+        dataset.use_valid()
+        valid_errors.append(test(dataset, model, loss))
         print('Validation error: ', valid_errors[-1])
 
-    test_error = test(test_set, model, loss)
+    dataset.use_test()
+    test_error = test(dataset, model, loss)
     print('Final Test Error: ', test_error)
 
     exp.add_result(test_error, {
