@@ -116,7 +116,7 @@ def learn(exp_name, dataset, model=None, optimizer=None, loss=None,
 
     print('Splitting dataset in ' + str(split[0]) + ' train, ' + str(split[1]) + ' Validation, ' + str(split[2]) + ' Test')
     dataset = split_dataset(dataset, split[0], split[1], split[2])
-    kwargs = {'num_workers': 1, 'pin_memory': True}
+    kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
     train_loader = th.utils.data.DataLoader(dataset, batch_size=bsz, shuffle=True, **kwargs)
     dataset.use_valid()
     valid_loader = th.utils.data.DataLoader(dataset, batch_size=bsz, shuffle=True, **kwargs)
