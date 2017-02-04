@@ -16,10 +16,16 @@ from collections import Iterable
 from itertools import cycle
 from time import time
 
-from PIL import Image
-from moviepy.editor import VideoClip
-from moviepy.video.io.bindings import mplfig_to_npimage
-import cStringIO as sio
+try: 
+    from PIL import Image
+except:
+    pass
+try: 
+    from moviepy.editor import VideoClip
+    from moviepy.video.io.bindings import mplfig_to_npimage
+    import cStringIO as sio
+except:
+    pass
 
 
 FONT_SIZE = 20
